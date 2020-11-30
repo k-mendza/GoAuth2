@@ -2,16 +2,18 @@ package controllers
 
 import (
 	"GoAuth2/main/domain"
+	"GoAuth2/main/error_models"
 	"GoAuth2/main/services"
 	"encoding/json"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 
 	userValidator "GoAuth2/main/validators"
 )
 
-func GetUserByUsername(response http.ResponseWriter, request *http.Request) {
-	username := request.URL.Query().Get("username")
-	if validateUsername(response, username) {
+func GetUserByUsername(response http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	username := params.ByName("username")
+	if isInvalidUsername(response, username) {
 		return
 	}
 	user, done := getUserFromService(response, username)
@@ -22,24 +24,26 @@ func GetUserByUsername(response http.ResponseWriter, request *http.Request) {
 	response.Write(jsonValue)
 }
 
+func isInvalidUsername(response http.ResponseWriter, username string) bool {
+	usernameValidationError := userValidator.IsInvalidUsername(username)
+	if usernameValidationError != nil {
+		fillErrorResponse(response, usernameValidationError)
+		return true
+	}
+	return false
+}
+
 func getUserFromService(response http.ResponseWriter, username string) (*domain.User, bool) {
 	user, err := services.GetUser(username)
 	if err != nil {
-		userNotFoundErrorJson, _ := json.Marshal(err)
-		response.WriteHeader(err.StatusCode)
-		response.Write(userNotFoundErrorJson)
+		fillErrorResponse(response, err)
 		return nil, true
 	}
 	return user, false
 }
 
-func validateUsername(response http.ResponseWriter, username string) bool {
-	usernameValidationError := userValidator.IsInvalidUsername(username)
-	if usernameValidationError != nil {
-		usernameErrorJson, _ := json.Marshal(usernameValidationError)
-		response.WriteHeader(usernameValidationError.StatusCode)
-		response.Write(usernameErrorJson)
-		return true
-	}
-	return false
+func fillErrorResponse(response http.ResponseWriter, err *error_models.ApplicationError) {
+	userNotFoundErrorJson, _ := json.Marshal(err)
+	response.WriteHeader(err.StatusCode)
+	response.Write(userNotFoundErrorJson)
 }

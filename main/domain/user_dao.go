@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-var users = map[string]*User{
-	"steve": {ID: 1, UserName: "steve", Password: "ab2345wr5423ekl452jh6298u902834yh", Email: "steve@gmail.com"},
+var users = map[string]*User {
+	"steve": {ID: 1, Username: "steve", Password: "ab2345wr5423ekl452jh6298u902834yh", Email: "steve@gmail.com"},
 }
 
 func GetUser(username string) (*User, *error_models.ApplicationError) {

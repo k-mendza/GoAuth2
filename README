@@ -1,0 +1,7 @@
+GoAuth2 is an application server for managing and authenticating users.
+
+TODO
+1. ORM
+2. Controller tests
+3. DDoS create user endpoint *to be decided
+

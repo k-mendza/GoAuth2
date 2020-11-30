@@ -1,21 +1,29 @@
 package app
 
 import (
-	"GoAuth2/main/controllers"
+	"GoAuth2/main/router"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func StartApplication() {
-	http.HandleFunc("/users", controllers.GetUserByUsername)
-
-	log.Printf("Server starting on port %s", "8080")
-
+	loadConfigurationFile()
+	log.Printf("server started on port %s", os.Getenv("PORT"))
 	listenAndServe()
 }
 
 func listenAndServe() {
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":"+os.Getenv("PORT"), router.CreateRoutes()); err != nil {
 		log.Fatalf("%s", err)
+	}
+}
+
+func loadConfigurationFile() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("failed to load configuration file")
 	}
 }
